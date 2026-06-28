@@ -20,6 +20,8 @@ export default function ComparisonView({ originalUrl, gradcam }: Props) {
   const handleMouseDown = () => setIsDragging(true);
   const handleMouseUp = () => setIsDragging(false);
 
+  const rightSrc = gradcam ? `data:image/png;base64,${gradcam}` : originalUrl;
+
   return (
     <div
       ref={containerRef}
@@ -42,14 +44,12 @@ export default function ComparisonView({ originalUrl, gradcam }: Props) {
         className="absolute inset-0 overflow-hidden"
         style={{ width: `${position}%` }}
       >
-        {gradcam && (
         <img
-          src={`data:image/png;base64,${gradcam}`}
-          alt="Grad-CAM"
+          src={rightSrc}
+          alt={gradcam ? "Grad-CAM" : "Original"}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ width: `${100 / (position / 100)}%`, maxWidth: 'none' }}
         />
-        )}
       </div>
 
       <div

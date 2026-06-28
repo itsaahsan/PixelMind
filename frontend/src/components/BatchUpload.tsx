@@ -6,7 +6,7 @@ interface BatchResult {
   label: string;
   confidence: number;
   probability: number;
-  gradcam: string;
+  gradcam: string | null;
 }
 
 interface Props {
