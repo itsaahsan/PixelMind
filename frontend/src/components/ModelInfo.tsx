@@ -45,7 +45,7 @@ export default function ModelInfo({ label, probability }: Props) {
       <div className="mt-4 pt-4 space-y-2 text-xs" style={{ borderTop: '1px solid #EDE6DA' }}>
         <div className="flex justify-between">
           <span style={{ color: '#A89278' }}>Model</span>
-          <span style={{ color: '#5C4A3A' }}>MobileNetV2</span>
+          <span style={{ color: '#5C4A3A' }}>ResNet-50</span>
         </div>
         <div className="flex justify-between">
           <span style={{ color: '#A89278' }}>Architecture</span>
@@ -57,7 +57,7 @@ export default function ModelInfo({ label, probability }: Props) {
         </div>
         <div className="flex justify-between">
           <span style={{ color: '#A89278' }}>Grad-CAM Layer</span>
-          <span style={{ color: '#5C4A3A' }}>features[-1]</span>
+          <span style={{ color: '#5C4A3A' }}>layer4[-1]</span>
         </div>
         <div className="flex justify-between">
           <span style={{ color: '#A89278' }}>Threshold</span>

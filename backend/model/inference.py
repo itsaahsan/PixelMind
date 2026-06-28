@@ -53,8 +53,7 @@ def _load_model():
 
 
 def _compute_gradcam(tensor, image):
-    target_layers = [_model.base.features[-1]]
-    cam = _gradcam_cls(model=_model, target_layers=target_layers)
+    cam = _gradcam_cls(model=_model, target_layers=[_model.base.layer4[-1]])
     grayscale_cam = cam(input_tensor=tensor)[0]
     rgb = np.array(image.resize((224, 224))) / 255.0
     cam_image = _show_cam(rgb, grayscale_cam, use_rgb=True)
