@@ -1,7 +1,7 @@
 interface Props {
   label: string;
   confidence: number;
-  gradcam: string;
+  gradcam: string | null;
 }
 
 export default function ResultCard({ label, confidence, gradcam }: Props) {
@@ -30,19 +30,21 @@ export default function ResultCard({ label, confidence, gradcam }: Props) {
         </div>
       </div>
 
-      <div>
-        <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#A89278' }}>
-          Grad-CAM Heatmap
+      {gradcam && (
+        <div>
+          <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#A89278' }}>
+            Grad-CAM Heatmap
+          </div>
+          <img
+            src={`data:image/png;base64,${gradcam}`}
+            alt="Grad-CAM visualization"
+            className="rounded-lg w-full"
+          />
+          <div className="text-xs mt-1 text-center" style={{ color: '#A89278' }}>
+            Highlighted region shows area of concern
+          </div>
         </div>
-        <img
-          src={`data:image/png;base64,${gradcam}`}
-          alt="Grad-CAM visualization"
-          className="rounded-lg w-full"
-        />
-        <div className="text-xs mt-1 text-center" style={{ color: '#A89278' }}>
-          Highlighted region shows area of concern
-        </div>
-      </div>
+      )}
 
       <div className="space-y-2">
         <div className="flex justify-between text-sm">

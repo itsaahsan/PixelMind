@@ -14,7 +14,7 @@ interface Result {
   label: string;
   confidence: number;
   probability: number;
-  gradcam: string;
+  gradcam: string | null;
 }
 
 interface HistoryItem {
@@ -23,7 +23,7 @@ interface HistoryItem {
   label: string;
   confidence: number;
   timestamp: string;
-  gradcam: string;
+  gradcam: string | null;
 }
 
 interface BatchResult {
@@ -31,7 +31,7 @@ interface BatchResult {
   label: string;
   confidence: number;
   probability: number;
-  gradcam: string;
+  gradcam: string | null;
 }
 
 export default function App() {
@@ -158,7 +158,7 @@ export default function App() {
                   gradcam={result.gradcam}
                 />
                 <div className="space-y-4">
-                  {originalUrl && (
+              {originalUrl && result.gradcam && (
                     <XRayViewer originalUrl={originalUrl} gradcam={result.gradcam} />
                   )}
                   {result.probability > 0 && (
