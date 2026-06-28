@@ -18,10 +18,15 @@ app.add_middleware(
 app.include_router(router, prefix="/api")
 
 
+@app.get("/")
+def root():
+    return {"message": "PixelMind API is running"}
+
+
 @app.get("/health")
 def health():
     return {
-        "status": "ok",
+        "status": "healthy",
         "model": "ResNet-50",
         "accuracy": "94.3%",
         "version": "1.0.0",
