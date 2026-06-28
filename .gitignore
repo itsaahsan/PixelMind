@@ -21,3 +21,4 @@ data/
 train.log
 backend/model/weights/best_model.pth
 backend/model/weights/best_model_fp16.pth
+test_xray.jpg

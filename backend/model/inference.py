@@ -1,6 +1,5 @@
 import io
 import os
-import base64
 import numpy as np
 from PIL import Image
 import onnxruntime as ort
@@ -36,5 +35,4 @@ def predict(image_bytes: bytes) -> dict:
         "label": label,
         "confidence": round(confidence * 100, 2),
         "probability": round(prob, 4),
-        "gradcam": "",
     }

@@ -1,33 +1,9 @@
 import { useState } from "react";
 import { classifyImage } from "./api";
-import UploadZone from "./components/UploadZone";
 import ResultCard from "./components/ResultCard";
-import XRayViewer from "./components/XRayViewer";
-import AnalysisHistory, { addToHistory } from "./components/AnalysisHistory";
 import ModelInfo from "./components/ModelInfo";
-import BatchUpload from "./components/BatchUpload";
-import BatchResults from "./components/BatchResults";
-import ComparisonView from "./components/ComparisonView";
-import DownloadReport from "./components/DownloadReport";
 
 interface Result {
-  label: string;
-  confidence: number;
-  probability: number;
-  gradcam: string | null;
-}
-
-interface HistoryItem {
-  id: string;
-  fileName: string;
-  label: string;
-  confidence: number;
-  timestamp: string;
-  gradcam: string | null;
-}
-
-interface BatchResult {
-  fileName: string;
   label: string;
   confidence: number;
   probability: number;
@@ -40,9 +16,7 @@ export default function App() {
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
-  const [showComparison, setShowComparison] = useState(false);
-  const [batchResults, setBatchResults] = useState<BatchResult[] | null>(null);
-  const [activeView, setActiveView] = useState<"single" | "batch">("single");
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleFile = async (file: File) => {
     setLoading(true);
@@ -54,7 +28,6 @@ export default function App() {
     try {
       const data = await classifyImage(file);
       setResult(data);
-      addToHistory({ fileName: file.name, label: data.label, confidence: data.confidence, gradcam: data.gradcam });
     } catch (err: any) {
       setError(err.response?.data?.detail || "Classification failed.");
     } finally {
@@ -62,114 +35,127 @@ export default function App() {
     }
   };
 
-  const handleHistorySelect = async (item: HistoryItem) => {
-    setResult({ label: item.label, confidence: item.confidence, probability: 0, gradcam: item.gradcam });
-    setFileName(item.fileName);
-    setOriginalUrl(null);
-  };
-
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F2EEE6' }}>
-      <header className="border-b" style={{ backgroundColor: '#FAF8F5', borderColor: '#DDD1C0' }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#F2EEE6" }}>
+      <header
+        className="border-b"
+        style={{ backgroundColor: "#FAF8F5", borderColor: "#DDD1C0" }}
+      >
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold" style={{ color: '#5C4A3A' }}>PixelMind</h1>
-              <p className="text-sm mt-0.5" style={{ color: '#8B7355' }}>
-                Chest X-Ray Pneumonia Classifier with Grad-CAM
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <AnalysisHistory onSelect={handleHistorySelect} currentId={null} />
-            </div>
-          </div>
-
-          <div className="flex gap-2 mt-4">
-            <button
-              onClick={() => setActiveView("single")}
-              className="px-4 py-1.5 rounded-lg text-sm font-medium transition"
-              style={{
-                backgroundColor: activeView === "single" ? '#5C4A3A' : '#EDE6DA',
-                color: activeView === "single" ? '#FAF8F5' : '#5C4A3A',
-              }}
-            >
-              Single Image
-            </button>
-            <button
-              onClick={() => setActiveView("batch")}
-              className="px-4 py-1.5 rounded-lg text-sm font-medium transition"
-              style={{
-                backgroundColor: activeView === "batch" ? '#5C4A3A' : '#EDE6DA',
-                color: activeView === "batch" ? '#FAF8F5' : '#5C4A3A',
-              }}
-            >
-              Batch Upload
-            </button>
-          </div>
+          <h1
+            className="text-2xl font-bold"
+            style={{ color: "#5C4A3A" }}
+          >
+            PixelMind
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: "#8B7355" }}>
+            Chest X-Ray Pneumonia Classifier
+          </p>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {activeView === "single" ? (
-          <UploadZone onFileSelect={handleFile} loading={loading} />
-        ) : (
-          <BatchUpload onBatchComplete={setBatchResults} />
-        )}
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
+          }}
+          className="border-2 border-dashed rounded-xl p-10 text-center transition-all cursor-pointer"
+          style={{
+            borderColor: isDragging ? "#8B7355" : "#C4B39A",
+            backgroundColor: isDragging ? "#EDE6DA" : "transparent",
+          }}
+          onClick={() => document.getElementById("file-input")?.click()}
+        >
+          <input
+            id="file-input"
+            type="file"
+            accept="image/jpeg,image/png"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFile(file);
+            }}
+          />
+          {loading ? (
+            <div className="flex items-center justify-center gap-3">
+              <div
+                className="animate-spin w-6 h-6 border-2 rounded-full"
+                style={{
+                  borderColor: "#C4B39A",
+                  borderTopColor: "#8B7355",
+                }}
+              />
+              <span className="text-sm" style={{ color: "#5C4A3A" }}>
+                Analyzing...
+              </span>
+            </div>
+          ) : (
+            <>
+              <div className="text-4xl mb-3">🫁</div>
+              <div
+                className="text-sm font-medium"
+                style={{ color: "#5C4A3A" }}
+              >
+                Upload Chest X-Ray
+              </div>
+              <div className="text-xs mt-1" style={{ color: "#A89278" }}>
+                JPEG or PNG · Drag & drop or click
+              </div>
+            </>
+          )}
+        </div>
 
         {error && (
-          <div className="border rounded-xl p-4 text-sm" style={{ backgroundColor: '#FDEAEA', borderColor: '#F5C6C6', color: '#9B2C2C' }}>
+          <div
+            className="border rounded-xl p-4 text-sm"
+            style={{
+              backgroundColor: "#FDEAEA",
+              borderColor: "#F5C6C6",
+              color: "#9B2C2C",
+            }}
+          >
             {error}
           </div>
         )}
 
-        {batchResults && (
-          <BatchResults results={batchResults} onClose={() => setBatchResults(null)} />
-        )}
-
-        {result && activeView === "single" && (
+        {result && !loading && (
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold" style={{ color: '#5C4A3A' }}>{fileName}</h2>
-              <DownloadReport
+            <h2
+              className="text-lg font-semibold"
+              style={{ color: "#5C4A3A" }}
+            >
+              {fileName}
+            </h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              <ResultCard
                 label={result.label}
                 confidence={result.confidence}
-                probability={result.probability}
-                gradcam={result.gradcam}
-                originalUrl={originalUrl || ""}
               />
-              {originalUrl && (
-                <button
-                  onClick={() => setShowComparison(!showComparison)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition"
-                  style={{ backgroundColor: '#EDE6DA', color: '#5C4A3A' }}
-                >
-                  {showComparison ? "Side by Side" : "Slider Compare"}
-                </button>
-              )}
-            </div>
-
-            {showComparison && originalUrl ? (
-              <ComparisonView originalUrl={originalUrl} gradcam={result.gradcam} />
-            ) : (
-              <div className="grid md:grid-cols-2 gap-6">
-                <ResultCard
-                  label={result.label}
-                  confidence={result.confidence}
-                  gradcam={result.gradcam}
-                />
-                <div className="space-y-4">
-              {originalUrl && (
-                    <XRayViewer originalUrl={originalUrl} gradcam={result.gradcam} />
-                  )}
-                  {result.probability > 0 && (
-                    <ModelInfo
-                      label={result.label}
-                      probability={result.probability}
-                    />
-                  )}
-                </div>
+              <div className="space-y-4">
+                {originalUrl && (
+                  <img
+                    src={originalUrl}
+                    alt="Uploaded X-ray"
+                    className="rounded-xl w-full border"
+                    style={{ borderColor: "#DDD1C0" }}
+                  />
+                )}
+                {result.probability > 0 && (
+                  <ModelInfo
+                    label={result.label}
+                    probability={result.probability}
+                  />
+                )}
               </div>
-            )}
+            </div>
           </div>
         )}
       </main>

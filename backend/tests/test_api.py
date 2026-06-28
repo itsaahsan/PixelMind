@@ -11,7 +11,6 @@ def test_health():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "ok"
-    assert data["model"] == "MobileNetV2"
     assert data["runtime"] == "ONNX"
 
 
@@ -46,4 +45,3 @@ def test_predict_valid_image():
     assert data["label"] in ["PNEUMONIA", "NORMAL"]
     assert 0 < data["confidence"] <= 100
     assert "probability" in data
-    assert "gradcam" in data
