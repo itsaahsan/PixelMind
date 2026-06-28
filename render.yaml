@@ -3,7 +3,7 @@ services:
     name: pixelmind-backend
     runtime: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt && python -c "import matplotlib; import matplotlib.font_manager; matplotlib.font_manager._load_fontmanager(try_read_cache=False)" && pip uninstall -y scipy scikit-learn opencv-python opencv-contrib-python cuda-toolkit cuda-bindings cuda-pathfinder nvidia-cublas nvidia-cuda-cupti nvidia-cuda-nvrtc nvidia-cuda-runtime nvidia-cudnn-cu13 nvidia-cufft nvidia-cufile nvidia-curand nvidia-cusolver nvidia-cusparse nvidia-cusparselt-cu13 nvidia-nccl-cu13 nvidia-nvjitlink nvidia-nvshmem-cu13 nvidia-nvtx triton 2>/dev/null; echo "build OK"
+    buildCommand: pip install -r requirements.txt && MPLCONFIGDIR=/opt/render/project/.matplotlib python -c "import matplotlib; import matplotlib.font_manager; matplotlib.font_manager._load_fontmanager(try_read_cache=False)" && pip uninstall -y scipy scikit-learn opencv-python opencv-contrib-python cuda-toolkit cuda-bindings cuda-pathfinder nvidia-cublas nvidia-cuda-cupti nvidia-cuda-nvrtc nvidia-cuda-runtime nvidia-cudnn-cu13 nvidia-cufft nvidia-cufile nvidia-curand nvidia-cusolver nvidia-cusparse nvidia-cusparselt-cu13 nvidia-nccl-cu13 nvidia-nvjitlink nvidia-nvshmem-cu13 nvidia-nvtx triton 2>/dev/null; echo "build OK"
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
@@ -15,7 +15,7 @@ services:
       - key: MKL_NUM_THREADS
         value: "1"
       - key: MPLCONFIGDIR
-        value: "/tmp/mplconfig"
+        value: "/opt/render/project/.matplotlib"
 
   - type: web
     name: pixelmind

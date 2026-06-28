@@ -14,14 +14,9 @@ _show_cam = None
 
 
 def load_model():
-    global _model, _transform, _torch, _gradcam_cls, _show_cam
+    global _model, _transform, _torch
     if _model is None:
         _model, _transform, _torch = _load_model()
-    if _gradcam_cls is None:
-        from pytorch_grad_cam import GradCAM
-        from pytorch_grad_cam.utils.image import show_cam_on_image
-        _gradcam_cls = GradCAM
-        _show_cam = show_cam_on_image
 
 
 def _load_model():
@@ -52,7 +47,17 @@ def _load_model():
     return model, transform, torch
 
 
+def _ensure_gradcam():
+    global _gradcam_cls, _show_cam
+    if _gradcam_cls is None:
+        from pytorch_grad_cam import GradCAM
+        from pytorch_grad_cam.utils.image import show_cam_on_image
+        _gradcam_cls = GradCAM
+        _show_cam = show_cam_on_image
+
+
 def _compute_gradcam(tensor, image):
+    _ensure_gradcam()
     cam = _gradcam_cls(model=_model, target_layers=[_model.base.layer4[-1]])
     grayscale_cam = cam(input_tensor=tensor)[0]
     rgb = np.array(image.resize((224, 224))) / 255.0
@@ -78,20 +83,17 @@ def predict(image_bytes: bytes) -> dict:
         confidence = prob if prob > 0.5 else 1 - prob
 
     cam_b64 = None
-    if _gradcam_cls is not None:
-        result = [None]
-        def _run_cam():
-            try:
-                result[0] = _compute_gradcam(tensor, image)
-            except Exception:
-                pass
-        t = threading.Thread(target=_run_cam)
-        t.start()
-        t.join(timeout=15)
-        if t.is_alive():
-            cam_b64 = None
-        else:
-            cam_b64 = result[0]
+    result = [None]
+    def _run_cam():
+        try:
+            result[0] = _compute_gradcam(tensor, image)
+        except Exception:
+            pass
+    t = threading.Thread(target=_run_cam)
+    t.start()
+    t.join(timeout=15)
+    if not t.is_alive():
+        cam_b64 = result[0]
 
     return {
         "label": label,
