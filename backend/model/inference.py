@@ -1,42 +1,56 @@
-import torch
-torch.set_num_threads(1)
+import io
+import base64
 
 import numpy as np
 from PIL import Image
-import io
-import base64
-from torchvision import transforms
-from pytorch_grad_cam import GradCAM
-from pytorch_grad_cam.utils.image import show_cam_on_image
-from .model import PixelMindModel
 
-DEVICE = torch.device("cpu")
+_model = None
+_transform = None
+_torch = None
 
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406],
-                         [0.229, 0.224, 0.225]),
-])
 
-model = PixelMindModel()
-model.load_state_dict(
-    torch.load("model/weights/best_model.pth", map_location=DEVICE)
-)
-model.eval()
+def _load_model():
+    import torch
+    torch.set_num_threads(1)
+    from torchvision import transforms
+    from .model import PixelMindModel
+
+    device = torch.device("cpu")
+
+    model = PixelMindModel()
+    model.load_state_dict(
+        torch.load("model/weights/best_model.pth", map_location=device)
+    )
+    model.eval()
+
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406],
+                             [0.229, 0.224, 0.225]),
+    ])
+
+    return model, transform, torch
 
 
 def predict(image_bytes: bytes) -> dict:
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    tensor = transform(image).unsqueeze(0)
+    global _model, _transform, _torch
+    if _model is None:
+        _model, _transform, _torch = _load_model()
 
-    with torch.no_grad():
-        output = model(tensor)
-        prob = torch.sigmoid(output).item()
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    tensor = _transform(image).unsqueeze(0)
+
+    with _torch.no_grad():
+        output = _model(tensor)
+        prob = _torch.sigmoid(output).item()
         label = "PNEUMONIA" if prob > 0.5 else "NORMAL"
         confidence = prob if prob > 0.5 else 1 - prob
 
-    cam = GradCAM(model=model, target_layers=[model.base.layer4[-1]])
+    from pytorch_grad_cam import GradCAM
+    from pytorch_grad_cam.utils.image import show_cam_on_image
+
+    cam = GradCAM(model=_model, target_layers=[_model.base.layer4[-1]])
     grayscale_cam = cam(input_tensor=tensor)[0]
 
     rgb = np.array(image.resize((224, 224))) / 255.0
