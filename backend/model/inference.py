@@ -34,7 +34,9 @@ def _load_model():
     device = torch.device("cpu")
 
     model = PixelMindModel()
-    weights_path = os.path.join(os.path.dirname(__file__), "weights", "best_model.pth")
+    weights_path = os.path.join(os.path.dirname(__file__), "weights", "best_model_fp16.pth")
+    if not os.path.exists(weights_path):
+        weights_path = os.path.join(os.path.dirname(__file__), "weights", "best_model.pth")
     state = torch.load(weights_path, map_location=device, weights_only=True)
     model.load_state_dict(state)
     model.eval()
