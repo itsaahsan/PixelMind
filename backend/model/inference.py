@@ -1,5 +1,6 @@
 import io
 import gc
+import base64
 import threading
 
 import numpy as np
@@ -34,7 +35,7 @@ def _load_model():
 
     model = PixelMindModel()
     weights_path = os.path.join(os.path.dirname(__file__), "weights", "best_model.pth")
-    state = torch.load(weights_path, map_location=device)
+    state = torch.load(weights_path, map_location=device, weights_only=True)
     model.load_state_dict(state)
     model.eval()
 
@@ -52,7 +53,8 @@ def _load_model():
 
 
 def _compute_gradcam(tensor, image):
-    cam = _gradcam_cls(model=_model, target_layers=[_model.base.layer4[-1]])
+    target_layers = [_model.base.features[-1]]
+    cam = _gradcam_cls(model=_model, target_layers=target_layers)
     grayscale_cam = cam(input_tensor=tensor)[0]
     rgb = np.array(image.resize((224, 224))) / 255.0
     cam_image = _show_cam(rgb, grayscale_cam, use_rgb=True)
@@ -63,7 +65,6 @@ def _compute_gradcam(tensor, image):
 
 
 def predict(image_bytes: bytes) -> dict:
-    import base64
     global _model, _transform, _torch, _gradcam_cls, _show_cam
     if _model is None:
         load_model()
@@ -87,7 +88,7 @@ def predict(image_bytes: bytes) -> dict:
                 pass
         t = threading.Thread(target=_run_cam, daemon=True)
         t.start()
-        t.join(timeout=3)
+        t.join(timeout=10)
         if not t.is_alive():
             cam_b64 = result[0]
     except Exception:
