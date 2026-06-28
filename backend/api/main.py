@@ -25,9 +25,4 @@ def root():
 
 @app.get("/health")
 def health():
-    return {
-        "status": "healthy",
-        "model": "ResNet-50",
-        "accuracy": "94.3%",
-        "version": "1.0.0",
-    }
+    return {"status": "healthy"}
