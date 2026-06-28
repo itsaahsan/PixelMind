@@ -1,16 +1,27 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import router
+from model.inference import load_model
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    load_model()
+    yield
+
 
 app = FastAPI(
     title="PixelMind API",
     description="Chest X-Ray Pneumonia Classifier with Grad-CAM",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

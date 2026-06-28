@@ -12,6 +12,17 @@ _gradcam_cls = None
 _show_cam = None
 
 
+def load_model():
+    global _model, _transform, _torch, _gradcam_cls, _show_cam
+    if _model is None:
+        _model, _transform, _torch = _load_model()
+    if _gradcam_cls is None:
+        from pytorch_grad_cam import GradCAM
+        from pytorch_grad_cam.utils.image import show_cam_on_image
+        _gradcam_cls = GradCAM
+        _show_cam = show_cam_on_image
+
+
 def _load_model():
     import torch
     torch.set_num_threads(1)
@@ -42,13 +53,7 @@ def _load_model():
 def predict(image_bytes: bytes) -> dict:
     global _model, _transform, _torch, _gradcam_cls, _show_cam
     if _model is None:
-        _model, _transform, _torch = _load_model()
-
-    if _gradcam_cls is None:
-        from pytorch_grad_cam import GradCAM
-        from pytorch_grad_cam.utils.image import show_cam_on_image
-        _gradcam_cls = GradCAM
-        _show_cam = show_cam_on_image
+        load_model()
 
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     tensor = _transform(image).unsqueeze(0).half()
