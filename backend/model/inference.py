@@ -13,14 +13,9 @@ _show_cam = None
 
 
 def load_model():
-    global _model, _transform, _torch, _gradcam_cls, _show_cam
+    global _model, _transform, _torch
     if _model is None:
         _model, _transform, _torch = _load_model()
-    if _gradcam_cls is None:
-        from pytorch_grad_cam import GradCAM
-        from pytorch_grad_cam.utils.image import show_cam_on_image
-        _gradcam_cls = GradCAM
-        _show_cam = show_cam_on_image
 
 
 def _load_model():
@@ -66,19 +61,20 @@ def predict(image_bytes: bytes) -> dict:
         confidence = prob if prob > 0.5 else 1 - prob
 
     cam_b64 = None
-    try:
-        cam = _gradcam_cls(model=_model, target_layers=[_model.base.layer4[-1]])
-        grayscale_cam = cam(input_tensor=tensor)[0]
+    if _gradcam_cls is not None:
+        try:
+            cam = _gradcam_cls(model=_model, target_layers=[_model.base.layer4[-1]])
+            grayscale_cam = cam(input_tensor=tensor)[0]
 
-        rgb = np.array(image.resize((224, 224))) / 255.0
-        cam_image = _show_cam(rgb, grayscale_cam, use_rgb=True)
-        cam_pil = Image.fromarray(cam_image)
+            rgb = np.array(image.resize((224, 224))) / 255.0
+            cam_image = _show_cam(rgb, grayscale_cam, use_rgb=True)
+            cam_pil = Image.fromarray(cam_image)
 
-        buf = io.BytesIO()
-        cam_pil.save(buf, format="PNG")
-        cam_b64 = base64.b64encode(buf.getvalue()).decode()
-    except Exception:
-        pass
+            buf = io.BytesIO()
+            cam_pil.save(buf, format="PNG")
+            cam_b64 = base64.b64encode(buf.getvalue()).decode()
+        except Exception:
+            pass
 
     return {
         "label": label,
