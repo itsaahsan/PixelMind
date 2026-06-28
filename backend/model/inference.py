@@ -37,7 +37,6 @@ def _load_model():
     state = torch.load(weights_path, map_location=device)
     model.load_state_dict(state)
     model.eval()
-    model.half()
 
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -58,7 +57,7 @@ def predict(image_bytes: bytes) -> dict:
         load_model()
 
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    tensor = _transform(image).unsqueeze(0).half()
+    tensor = _transform(image).unsqueeze(0)
 
     with _torch.no_grad():
         output = _model(tensor)
