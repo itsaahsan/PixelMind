@@ -158,7 +158,7 @@ export default function App() {
                   gradcam={result.gradcam}
                 />
                 <div className="space-y-4">
-              {originalUrl && result.gradcam && (
+              {originalUrl && (
                     <XRayViewer originalUrl={originalUrl} gradcam={result.gradcam} />
                   )}
                   {result.probability > 0 && (
