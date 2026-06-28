@@ -69,7 +69,7 @@ def _compute_gradcam(tensor, image):
 
 
 def predict(image_bytes: bytes) -> dict:
-    global _model, _transform, _torch, _gradcam_cls, _show_cam
+    global _model, _transform, _torch
     if _model is None:
         load_model()
 
@@ -83,17 +83,20 @@ def predict(image_bytes: bytes) -> dict:
         confidence = prob if prob > 0.5 else 1 - prob
 
     cam_b64 = None
-    result = [None]
-    def _run_cam():
-        try:
-            result[0] = _compute_gradcam(tensor, image)
-        except Exception:
-            pass
-    t = threading.Thread(target=_run_cam)
-    t.start()
-    t.join(timeout=15)
-    if not t.is_alive():
-        cam_b64 = result[0]
+    try:
+        result = [None]
+        def _run_cam():
+            try:
+                result[0] = _compute_gradcam(tensor, image)
+            except Exception:
+                pass
+        t = threading.Thread(target=_run_cam, daemon=True)
+        t.start()
+        t.join(timeout=3)
+        if not t.is_alive():
+            cam_b64 = result[0]
+    except Exception:
+        pass
 
     return {
         "label": label,
