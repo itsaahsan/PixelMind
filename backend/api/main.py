@@ -1,13 +1,20 @@
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import router
-from model.inference import load_model
+
+logger = logging.getLogger("uvicorn")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    load_model()
+    try:
+        from model.inference import load_model
+        load_model()
+        logger.info("Model loaded successfully")
+    except Exception as e:
+        logger.error(f"Model loading failed: {e}")
     yield
 
 
@@ -36,4 +43,5 @@ def root():
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health():
-    return {"status": "healthy"}
+    from model.inference import _model
+    return {"status": "healthy", "model_loaded": _model is not None}

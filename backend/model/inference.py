@@ -24,6 +24,7 @@ def load_model():
 
 
 def _load_model():
+    import os
     import torch
     torch.set_num_threads(1)
     from torchvision import transforms
@@ -32,7 +33,8 @@ def _load_model():
     device = torch.device("cpu")
 
     model = PixelMindModel()
-    state = torch.load("model/weights/best_model.pth", map_location=device)
+    weights_path = os.path.join(os.path.dirname(__file__), "weights", "best_model.pth")
+    state = torch.load(weights_path, map_location=device)
     model.load_state_dict(state)
     model.eval()
     model.half()
