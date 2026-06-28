@@ -16,4 +16,4 @@ services:
     envVars:
       - key: VITE_API_URL
         syncFromBranch: main
-        value: "https://pixelmind-backend.onrender.com"
+        value: "https://pixelmind-backend-oxs3.onrender.com"
