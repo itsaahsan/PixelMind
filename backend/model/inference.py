@@ -65,16 +65,20 @@ def predict(image_bytes: bytes) -> dict:
         label = "PNEUMONIA" if prob > 0.5 else "NORMAL"
         confidence = prob if prob > 0.5 else 1 - prob
 
-    cam = _gradcam_cls(model=_model, target_layers=[_model.base.layer4[-1]])
-    grayscale_cam = cam(input_tensor=tensor)[0]
+    cam_b64 = None
+    try:
+        cam = _gradcam_cls(model=_model, target_layers=[_model.base.layer4[-1]])
+        grayscale_cam = cam(input_tensor=tensor)[0]
 
-    rgb = np.array(image.resize((224, 224))) / 255.0
-    cam_image = _show_cam(rgb, grayscale_cam, use_rgb=True)
-    cam_pil = Image.fromarray(cam_image)
+        rgb = np.array(image.resize((224, 224))) / 255.0
+        cam_image = _show_cam(rgb, grayscale_cam, use_rgb=True)
+        cam_pil = Image.fromarray(cam_image)
 
-    buf = io.BytesIO()
-    cam_pil.save(buf, format="PNG")
-    cam_b64 = base64.b64encode(buf.getvalue()).decode()
+        buf = io.BytesIO()
+        cam_pil.save(buf, format="PNG")
+        cam_b64 = base64.b64encode(buf.getvalue()).decode()
+    except Exception:
+        pass
 
     return {
         "label": label,
