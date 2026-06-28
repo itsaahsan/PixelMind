@@ -1,10 +1,9 @@
 interface Props {
   label: string;
-  confidence: number;
   probability: number;
 }
 
-export default function ModelInfo({ label, confidence, probability }: Props) {
+export default function ModelInfo({ label, probability }: Props) {
   const isPneumonia = label === "PNEUMONIA";
   const normalProb = isPneumonia ? (1 - probability) * 100 : probability * 100;
   const pneumoniaProb = isPneumonia ? probability * 100 : (1 - probability) * 100;

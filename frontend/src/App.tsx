@@ -164,7 +164,6 @@ export default function App() {
                   {result.probability > 0 && (
                     <ModelInfo
                       label={result.label}
-                      confidence={result.confidence}
                       probability={result.probability}
                     />
                   )}

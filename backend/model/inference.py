@@ -1,4 +1,6 @@
 import torch
+torch.set_num_threads(1)
+
 import numpy as np
 from PIL import Image
 import io

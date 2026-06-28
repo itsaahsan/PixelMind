@@ -7,6 +7,12 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.0"
+      - key: MPLBACKEND
+        value: "Agg"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: MKL_NUM_THREADS
+        value: "1"
 
   - type: web
     name: pixelmind
