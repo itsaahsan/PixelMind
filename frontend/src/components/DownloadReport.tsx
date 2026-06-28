@@ -4,7 +4,7 @@ interface Props {
   label: string;
   confidence: number;
   probability: number;
-  gradcam: string;
+  gradcam: string | null;
   originalUrl: string;
 }
 
@@ -39,12 +39,21 @@ export default function DownloadReport({ label, confidence, probability, gradcam
     });
     ctx.drawImage(img, 30, 85, 300, 300);
 
-    const gradImg = new Image();
-    gradImg.src = `data:image/png;base64,${gradcam}`;
-    await new Promise<void>((resolve) => {
-      gradImg.onload = () => resolve();
-    });
-    ctx.drawImage(gradImg, 350, 85, 300, 300);
+    if (gradcam) {
+      const gradImg = new Image();
+      gradImg.src = `data:image/png;base64,${gradcam}`;
+      await new Promise<void>((resolve) => {
+        gradImg.onload = () => resolve();
+        setTimeout(resolve, 2000);
+      });
+      ctx.drawImage(gradImg, 350, 85, 300, 300);
+    } else {
+      ctx.fillStyle = "#EDE6DA";
+      ctx.fillRect(350, 85, 300, 300);
+      ctx.fillStyle = "#A89278";
+      ctx.font = "14px Arial";
+      ctx.fillText("Grad-CAM unavailable", 420, 240);
+    }
 
     ctx.fillStyle = "#5C4A3A";
     ctx.font = "bold 18px Arial";

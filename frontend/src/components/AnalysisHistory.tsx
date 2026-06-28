@@ -6,7 +6,7 @@ interface HistoryItem {
   label: string;
   confidence: number;
   timestamp: string;
-  gradcam: string;
+  gradcam: string | null;
 }
 
 interface Props {
@@ -68,11 +68,15 @@ export default function AnalysisHistory({ onSelect, currentId }: Props) {
                 backgroundColor: currentId === item.id ? '#EDE6DA' : 'transparent',
               }}
             >
-              <img
-                src={`data:image/png;base64,${item.gradcam}`}
-                alt=""
-                className="w-10 h-10 rounded object-cover"
-              />
+              {item.gradcam ? (
+                <img
+                  src={`data:image/png;base64,${item.gradcam}`}
+                  alt=""
+                  className="w-10 h-10 rounded object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded" style={{ backgroundColor: '#EDE6DA' }} />
+              )}
               <div className="flex-1 min-w-0">
                 <div className="text-sm truncate" style={{ color: '#5C4A3A' }}>{item.fileName}</div>
                 <div className="flex items-center gap-2 text-xs" style={{ color: '#8B7355' }}>

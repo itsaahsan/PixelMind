@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 
 interface Props {
   originalUrl: string;
-  gradcam: string;
+  gradcam: string | null;
 }
 
 export default function ComparisonView({ originalUrl, gradcam }: Props) {
@@ -42,12 +42,14 @@ export default function ComparisonView({ originalUrl, gradcam }: Props) {
         className="absolute inset-0 overflow-hidden"
         style={{ width: `${position}%` }}
       >
+        {gradcam && (
         <img
           src={`data:image/png;base64,${gradcam}`}
           alt="Grad-CAM"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ width: `${100 / (position / 100)}%`, maxWidth: 'none' }}
         />
+        )}
       </div>
 
       <div
